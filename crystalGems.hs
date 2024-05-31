@@ -23,8 +23,8 @@ buscarAspectoDeTipo tipo                   = buscarAspecto (UnAspecto tipo 0)
 reemplazarAspecto :: Aspecto -> Situacion -> Situacion
 reemplazarAspecto aspectoBuscado situacion = aspectoBuscado : (filter (not.mismoAspecto aspectoBuscado) situacion)
 
-situacion1 = [(UnAspecto "Incertidumbre" 100.2),(UnAspecto "Tension" 20.4),(UnAspecto "Peligro" 400.49)]
-situacion2 = [(UnAspecto "Tension" 14.2),(UnAspecto "Peligro" 200.32),(UnAspecto "Incertidumbre" 30.2)]
+situacion1 = [(UnAspecto "Incertidumbre" 100.2),(UnAspecto "Tension" 200.4),(UnAspecto "Peligro" 400.49)]
+situacion2 = [(UnAspecto "Tension" 140.2),(UnAspecto "Peligro" 200.32),(UnAspecto "Incertidumbre" 30.2)]
 
 ------------------ PUNTO 1 ------------------
 
@@ -69,16 +69,21 @@ data Gema = UnaGema{
 type Personalidad = Situacion -> Situacion
 
 vidente :: Personalidad
-vidente = alterarTension (-10) . alterarIncertidumbre (/2)
+vidente = alterarTension (subtract 10) . alterarIncertidumbre (/2)
 
 relajada :: Float -> Personalidad
-relajada relajacion = alterarPeligro (+ relajacion) . alterarTension (- 30)
+relajada relajacion = alterarPeligro (+ relajacion) . alterarTension (subtract 30)
+
+segura :: Personalidad
+segura = alterarTension (subtract 40) . alterarIncertidumbre (/ 4) . alterarPeligro (subtract 100)
 
 -- c.
 
 garnet = UnaGema "Garnet" 1000 vidente
 
-amatista = UnaGema "Amatista" 600 (relajada 10)
+amatista = UnaGema "Amatista" 800 (relajada 15)
+
+perla = UnaGema "Perla" 850 segura
 
 -- Auxiliar
 alterarTension :: (Float -> Float) -> Situacion -> Situacion
@@ -119,7 +124,7 @@ nombreFusion unaGema otraGema
     | otherwise                         = nombre unaGema ++ nombre otraGema
 
 personalidadFusion :: Gema -> Gema -> Personalidad
-personalidadFusion unaGema otraGema = (personalidad unaGema) . (personalidad otraGema) . alterarIncertidumbre (- 10) . alterarPeligro (- 10) . alterarTension (- 10)
+personalidadFusion unaGema otraGema = (personalidad unaGema) . (personalidad otraGema) . alterarIncertidumbre (subtract 10) . alterarPeligro (subtract 10) . alterarTension (subtract 10)
 
 fuerzaFusion :: Gema -> Gema -> Situacion -> Int
 fuerzaFusion unaGema otraGema unaSituacion
@@ -148,6 +153,7 @@ foo [1..] head (take 5) [1..]
 -}
 
 -- a.
+foo :: (Eq a) => [a] -> ([a] -> a) -> ([a] -> [a]) -> [a] -> Bool
 
 -- b.
 
@@ -163,7 +169,10 @@ foo 5 (+7) [1..] -> Error de tipos, nos falta la funcion a aplicar en la lista n
 -- ii.
 {- 
 foo [1..] head (take 5) [1..] -> Ya que se espera una lista, una funcion que va de una lista a un valor, 
-otra funcion que espera una lista y la otra lista para comparar
+otra funcion que espera una lista y la otra lista para comparar y devolver el bool.
+
+Al comparar el head de la lista potencialmente infinita que comienza con 1 con la lista de los 5 primeros 
+elementos de la misma lista. 
 -}
 
 -- iii. 
