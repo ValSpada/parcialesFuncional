@@ -23,8 +23,8 @@ mandarAlAnio :: Int -> Personaje -> Personaje
 mandarAlAnio unAnio unPersonaje = unPersonaje { anioPresente = unAnio }
 
 -- b.
-meditar :: Float -> Personaje -> Personaje
-meditar nivelConcentracion = alterarSalud (nivelConcentracion * 1.5 *)
+meditar :: Personaje -> Personaje
+meditar = alterarSalud (1.5 *)
 
 -- c.
 causarDanio :: Float -> Personaje -> Personaje
@@ -45,7 +45,7 @@ esMalvado (UnPersonaje _ unosElementos _) = any (== "Maldad") . map tipo $ unosE
 
 -- b.
 danioQueProduce :: Personaje -> Elemento -> Float
-danioQueProduce unPersonaje (UnElemento _ atacar _) = ((salud . atacar) unPersonaje) - (salud unPersonaje)
+danioQueProduce unPersonaje (UnElemento _ atacar _) = (salud unPersonaje) - ((salud . atacar) unPersonaje)
 
 -- c.
 enemigosMortales :: Personaje -> [Personaje] -> [Personaje]
@@ -61,13 +61,14 @@ verificarMortalidad unPersonaje unEnemigo = (== 0) . salud . aplicarAtaques unEn
 concentracion :: Float -> Elemento
 concentracion nivelConcentracion = UnElemento {
     tipo = "Magia",
-    defensa = meditar nivelConcentracion
+    ataque = noAfecta,
+    defensa = concentrarse nivelConcentracion
 }
 
 -- b.
 esbirrosMalvados :: Int -> [Elemento]
 esbirrosMalvados 0                = []
-esbirrosMalvados cantidadEsbirros = esbirro:esbirrosMalvados (cantidadEsbirros - 1)
+esbirrosMalvados cantidadEsbirros = esbirro:(esbirrosMalvados (cantidadEsbirros - 1))
 
 -- c.
 jack = UnPersonaje 300 [concentracion 3, katanaMagica] 200
@@ -80,13 +81,15 @@ aku anioActual cantidadSalud = UnPersonaje cantidadSalud (portalAlFuturo anioAct
 esbirro :: Elemento
 esbirro = UnElemento{
     tipo = "Maldad",
-    ataque = causarDanio 1
+    ataque = causarDanio 1,
+    defensa = noAfecta
 }
 
 katanaMagica :: Elemento
 katanaMagica = UnElemento{
     tipo = "Magia",
-    ataque = causarDanio 1000
+    ataque = causarDanio 1000,
+    defensa = noAfecta
 }
 
 portalAlFuturo :: Int -> Elemento
@@ -96,7 +99,19 @@ portalAlFuturo unAnio = UnElemento{
     defensa = aku anioFuturo . salud
 }where anioFuturo = 2800 + unAnio
 
+-- Auxiliar
+
+concentrarse :: Float -> Personaje -> Personaje
+concentrarse 1                  = meditar
+concentrarse nivelConcentracion = concentrarse (nivelConcentracion - 1) . meditar
+
+noAfecta :: Personaje -> Personaje
+noAfecta unPersonaje = unPersonaje
+
 --------------------- PUNTO 4 ---------------------
+
+-- ELEMENTO DE PRUEBA
+aku1 = aku 0 200
 
 -- De cada elemento, el ataque va para el enemigo y el defensivo para si mismo
 
@@ -108,13 +123,13 @@ luchar atacante defensor
 -- Auxiliar
 
 aplicarAtaques :: Personaje -> Personaje -> Personaje
-aplicarAtaques (UnPersonaje _ unosElementos _) defensor = foldr (($) . ataque) defensor unosElementos
+aplicarAtaques atacante defensor = foldr (($) . ataque) defensor (elementos atacante)
 
 aplicarDefensivos :: Personaje -> Personaje
 aplicarDefensivos atacante = foldr (($) . defensa) atacante (elementos atacante)
 
 --------------------- PUNTO 5 ---------------------
-
+f :: (Eq a, Num b) => ([a] -> b -> (c,c)) -> (b -> [a]) -> [a] -> [b] -> [c]
 f x y z
     | y 0 == z  = map (fst.x z)
     | otherwise = map (snd.x (y 0))
