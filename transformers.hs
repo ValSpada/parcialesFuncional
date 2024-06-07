@@ -32,7 +32,7 @@ trd3 (_,_,z) = z
 
 --------------------- PUNTO 1 ---------------------
 
-maximoSegun :: Ord a => (a -> a -> a) -> a -> a -> a
+maximoSegun :: (Ord b) => (a -> a -> b) -> a -> a -> a
 maximoSegun unaFuncion unValor otroValor
     | unaFuncion unValor otroValor > unaFuncion otroValor unValor = unValor
     | otherwise                                                   = otroValor
@@ -71,4 +71,9 @@ diferenciaSegura :: Int -> Int -> Int
 diferenciaSegura unValor otroValor = max 0 (unValor - otroValor)
 
 --------------------- PUNTO 5 ---------------------
+
+elMasRapido :: Autobot -> Autobot -> Autobot
+elMasRapido unAutobot otroAutobot = maximoSegun velocidadContra unAutobot otroAutobot
+
+--------------------- PUNTO 6 ---------------------
 
