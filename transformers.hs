@@ -21,13 +21,13 @@ autobots = [optimus, jazz, wheeljack, bumblebee]
 
 -- Auxiliar
 
-fst3 :: (Int,Int,Int) -> Int
+fst3 :: (a,a,a) -> a
 fst3 (x,_,_) = x
 
-snd3 :: (Int,Int,Int) -> Int
+snd3 :: (a,a,a) -> a
 snd3 (_,y,_) = y
 
-trd3 :: (Int,Int,Int) -> Int
+trd3 :: (a,a,a) -> a
 trd3 (_,_,z) = z
 
 --------------------- PUNTO 1 ---------------------
@@ -49,3 +49,26 @@ transformar :: Autobot -> Autobot
 transformar (Robot nombre atributos transformacion) = (Vehiculo nombre (transformacion atributos))
 
 --------------------- PUNTO 4 ---------------------
+
+velocidadContra :: Autobot -> Autobot -> Int
+velocidadContra unAutobot otroAutobot = restarDiferencia (fuerza unAutobot) (resistencia otroAutobot) . velocidad $ unAutobot 
+
+-- Auxiliar
+
+fuerza :: Autobot -> Int
+fuerza = fst3 . atributosAutobot
+
+velocidad :: Autobot -> Int
+velocidad = snd3 . atributosAutobot
+
+resistencia :: Autobot -> Int
+resistencia = trd3 . atributosAutobot
+
+restarDiferencia :: Int -> Int -> Int -> Int
+restarDiferencia fuerzaDelPrimero resistenciaDelSegundo velocidadPrimero = velocidadPrimero - (diferenciaSegura fuerzaDelPrimero resistenciaDelSegundo)
+
+diferenciaSegura :: Int -> Int -> Int
+diferenciaSegura unValor otroValor = max 0 (unValor - otroValor)
+
+--------------------- PUNTO 5 ---------------------
+
