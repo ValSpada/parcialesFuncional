@@ -30,6 +30,10 @@ snd3 (_,y,_) = y
 trd3 :: (a,a,a) -> a
 trd3 (_,_,z) = z
 
+nombre :: Autobot -> String
+nombre (Robot name _ _) = name
+nombre (Vehiculo name _) = name
+
 --------------------- PUNTO 1 ---------------------
 
 maximoSegun :: (Ord b) => (a -> a -> b) -> a -> a -> a
@@ -68,12 +72,37 @@ restarDiferencia :: Int -> Int -> Int -> Int
 restarDiferencia fuerzaDelPrimero resistenciaDelSegundo velocidadPrimero = velocidadPrimero - (diferenciaSegura fuerzaDelPrimero resistenciaDelSegundo)
 
 diferenciaSegura :: Int -> Int -> Int
-diferenciaSegura unValor otroValor = max 0 (unValor - otroValor)
+diferenciaSegura unValor = max 0 . (unValor -)
 
 --------------------- PUNTO 5 ---------------------
 
 elMasRapido :: Autobot -> Autobot -> Autobot
-elMasRapido unAutobot otroAutobot = maximoSegun velocidadContra unAutobot otroAutobot
+elMasRapido unAutobot = maximoSegun velocidadContra unAutobot
 
 --------------------- PUNTO 6 ---------------------
 
+-- a. 
+domina :: Autobot -> Autobot -> Bool
+domina unAutobot otroAutobot = leDominaComo (unAutobot, otroAutobot) && leDominaComo (unAutobot, transformar otroAutobot) && leDominaComo (transformar unAutobot, otroAutobot) && leDominaComo (transformar unAutobot, transformar otroAutobot)
+
+leDominaComo :: (Autobot,Autobot) -> Bool
+leDominaComo (unAutobot, otroAutobot) = (nombre . elMasRapido unAutobot) otroAutobot == (nombre unAutobot)
+
+-- b.
+losDominaATodos :: Autobot -> [Autobot] -> Bool
+losDominaATodos _ []                                    = True
+losDominaATodos unAutobot (primerAutobot:restoAutobots) = domina unAutobot primerAutobot && losDominaATodos unAutobot restoAutobots
+
+--------------------- PUNTO 7 ---------------------
+
+-- a.
+quienesCumplen :: (Autobot -> Bool) -> [Autobot] -> [Autobot]
+quienesCumplen condicion unosAutobots = filter condicion unosAutobots
+
+-- b.
+-- Consulta: quienesCumplen ()
+
+--------------------- PUNTO 8 ---------------------
+
+saraza :: (Ord b) => a -> a -> a -> (a -> a -> b) -> b
+saraza x y w z = z w . maximoSegun z y $ x
