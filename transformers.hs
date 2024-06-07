@@ -100,7 +100,7 @@ quienesCumplen :: (Autobot -> Bool) -> [Autobot] -> [Autobot]
 quienesCumplen condicion unosAutobots = filter condicion unosAutobots
 
 -- b.
--- Consulta: quienesCumplen ()
+-- Consulta: losDominaATodos (head . quienesCumplen (flip elem "aeiouAEIOU" . last . nombre) $ autobots) autobots
 
 --------------------- PUNTO 8 ---------------------
 
