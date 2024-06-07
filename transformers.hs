@@ -43,3 +43,9 @@ atributosAutobot :: Autobot -> (Int,Int,Int)
 atributosAutobot (Robot _ atributos _) = atributos
 atributosAutobot (Vehiculo _ (velocidad,resistencia)) = (0,velocidad,resistencia)
 
+--------------------- PUNTO 3 ---------------------
+
+transformar :: Autobot -> Autobot
+transformar (Robot nombre atributos transformacion) = (Vehiculo nombre (transformacion atributos))
+
+--------------------- PUNTO 4 ---------------------
