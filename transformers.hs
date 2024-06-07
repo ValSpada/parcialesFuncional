@@ -33,6 +33,13 @@ trd3 (_,_,z) = z
 --------------------- PUNTO 1 ---------------------
 
 maximoSegun :: Ord a => (a -> a -> a) -> a -> a -> a
-maximoSegun funcion unValor otroValor
-    | funcion unValor otroValor > funcion otroValor unValor = unValor
-    | otherwise                                             = otroValor
+maximoSegun unaFuncion unValor otroValor
+    | unaFuncion unValor otroValor > unaFuncion otroValor unValor = unValor
+    | otherwise                                                   = otroValor
+
+--------------------- PUNTO 2 ---------------------
+
+atributosAutobot :: Autobot -> (Int,Int,Int)
+atributosAutobot (Robot _ atributos _) = atributos
+atributosAutobot (Vehiculo _ (velocidad,resistencia)) = (0,velocidad,resistencia)
+
