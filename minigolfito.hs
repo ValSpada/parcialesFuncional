@@ -114,9 +114,13 @@ superaObstaculo unTiro unObstaculo = unObstaculo unTiro /= (Tiro 0 0 0)
 
 -- c. --
 --paloMasUtil :: Jugador -> [Obstaculo] -> PaloGolf
---paloMasUtil unJugador unosObstaculos = mayorSegun (cantidadObstaculosSuperados unosObstaculos) (head palos $ unJugador) (palos !! 2 $ unJugador)
+--paloMasUtil unJugador unosObstaculos = palos 
+
 
 ------------------ PUNTO 5 ------------------
 
---perdieronApuesta :: [(Jugador, Puntos)] -> [String]
---perdieronApuesta tablaJugadores = 
+perdieronApuesta :: [(Jugador, Puntos)] -> [String]
+perdieronApuesta unosJugadores = map (padre . fst) . filter ((/= (fst . niñoGanador $ unosJugadores)) . fst) $ unosJugadores
+
+niñoGanador :: [(Jugador, Puntos)] -> (Jugador, Puntos)
+niñoGanador unosJugadores = maximoSegun snd unosJugadores
