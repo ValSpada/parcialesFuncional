@@ -113,9 +113,8 @@ superaObstaculo :: Tiro -> Obstaculo -> Bool
 superaObstaculo unTiro unObstaculo = unObstaculo unTiro /= (Tiro 0 0 0)
 
 -- c. --
---paloMasUtil :: Jugador -> [Obstaculo] -> PaloGolf
---paloMasUtil unJugador unosObstaculos = palos 
-
+paloMasUtil :: Jugador -> [Obstaculo] -> Tiro
+paloMasUtil unJugador unosObstaculos = maximoSegun (paloQueSupera unosObstaculos) . map (flip golpe unJugador) $ palos
 
 ------------------ PUNTO 5 ------------------
 
