@@ -96,3 +96,27 @@ superaLaguna (Tiro unaVelocidad _ unaAltura) = unaVelocidad > 80 && between 1 5 
 
 superaHoyo :: Tiro -> Bool
 superaHoyo (Tiro unaVelocidad unaPrecision unaAltura) = between 5 20 unaVelocidad && unaPrecision > 95 && unaAltura == 0
+
+------------------ PUNTO 4 ------------------
+
+-- a. --
+
+palosUtiles :: Jugador -> Obstaculo -> [PaloGolf]
+palosUtiles unJugador unObstaculo = filter (flip superaObstaculo unObstaculo . flip golpe unJugador) palos
+
+-- b. --
+
+cantidadObstaculosSuperados :: [Obstaculo] -> Tiro -> Int
+cantidadObstaculosSuperados unosObstaculos unTiro = genericLength . takeWhile (superaObstaculo unTiro) $ unosObstaculos
+
+superaObstaculo :: Tiro -> Obstaculo -> Bool
+superaObstaculo unTiro unObstaculo = unObstaculo unTiro /= (Tiro 0 0 0)
+
+-- c. --
+--paloMasUtil :: Jugador -> [Obstaculo] -> PaloGolf
+--paloMasUtil unJugador unosObstaculos = mayorSegun (cantidadObstaculosSuperados unosObstaculos) (head palos $ unJugador) (palos !! 2 $ unJugador)
+
+------------------ PUNTO 5 ------------------
+
+--perdieronApuesta :: [(Jugador, Puntos)] -> [String]
+--perdieronApuesta tablaJugadores = 
