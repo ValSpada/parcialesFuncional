@@ -83,21 +83,26 @@ elMasRapido unAutobot = maximoSegun velocidadContra unAutobot
 
 -- a. 
 domina :: Autobot -> Autobot -> Bool
-domina unAutobot otroAutobot = leDominaComo (unAutobot, otroAutobot) && leDominaComo (unAutobot, transformar otroAutobot) && leDominaComo (transformar unAutobot, otroAutobot) && leDominaComo (transformar unAutobot, transformar otroAutobot)
+domina unAutobot otroAutobot = all (uncurry leDominaComo) combinacionesPosibles
+    where combinacionesPosibles = [(unAutobot, otroAutobot),(unAutobot, transformar otroAutobot),(transformar unAutobot, otroAutobot),(transformar unAutobot, transformar otroAutobot)]
+--domina unAutobot otroAutobot = leDominaComo (unAutobot, otroAutobot) && leDominaComo (unAutobot, transformar otroAutobot) && leDominaComo (transformar unAutobot, otroAutobot) && leDominaComo (transformar unAutobot, transformar otroAutobot)
 
-leDominaComo :: (Autobot,Autobot) -> Bool
-leDominaComo (unAutobot, otroAutobot) = (nombre . elMasRapido unAutobot) otroAutobot == (nombre unAutobot)
+leDominaComo :: Autobot -> Autobot -> Bool
+leDominaComo unAutobot otroAutobot = (nombre . elMasRapido unAutobot) otroAutobot == (nombre unAutobot)
 
 -- b.
 losDominaATodos :: Autobot -> [Autobot] -> Bool
-losDominaATodos _ []                                    = True
-losDominaATodos unAutobot (primerAutobot:restoAutobots) = domina unAutobot primerAutobot && losDominaATodos unAutobot restoAutobots
+losDominaATodos unAutobot unosAutobots = all (domina unAutobot) unosAutobots
+--losDominaATodos _ []                                    = True
+--losDominaATodos unAutobot (primerAutobot:restoAutobots) = domina unAutobot primerAutobot && losDominaATodos unAutobot restoAutobots
 
 --------------------- PUNTO 7 ---------------------
 
 -- a.
-quienesCumplen :: (Autobot -> Bool) -> [Autobot] -> [Autobot]
-quienesCumplen condicion unosAutobots = filter condicion unosAutobots
+quienesCumplen :: (Autobot -> Bool) -> [Autobot] -> [String]
+quienesCumplen condicion = map nombre . filter condicion 
+--quienesCumplen :: (Autobot -> Bool) -> [Autobot] -> [Autobots]
+--quienesCumplen condicion = filter condicion 
 
 -- b.
 -- Consulta: losDominaATodos (head . quienesCumplen (flip elem "aeiouAEIOU" . last . nombre) $ autobots) autobots
