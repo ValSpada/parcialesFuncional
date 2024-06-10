@@ -25,16 +25,19 @@ reemplazarAspecto aspectoBuscado situacion = aspectoBuscado : (filter (not.mismo
 
 situacion1 = [(UnAspecto "Incertidumbre" 100.2),(UnAspecto "Tension" 200.4),(UnAspecto "Peligro" 400.49)]
 situacion2 = [(UnAspecto "Tension" 140.2),(UnAspecto "Peligro" 200.32),(UnAspecto "Incertidumbre" 30.2)]
+situacion3 = [(UnAspecto "Peligro" 20),(UnAspecto "Incertidumbre" 20),(UnAspecto "Tension" 10)]
 
 ------------------ PUNTO 1 ------------------
 
 -- a.
 modificarAspecto :: (Float -> Float) -> Aspecto -> Aspecto
-modificarAspecto funcion unAspecto = cambiarGrado (funcion . grado $ unAspecto) unAspecto
+modificarAspecto funcion unAspecto = asignarGrado (funcion . grado $ unAspecto) unAspecto
 
 -- b.
 mejorSituacion :: Situacion -> Situacion -> Bool
-mejorSituacion unaSituacion otraSituacion = mejorAspecto (obtenerPeligro unaSituacion) (obtenerPeligro otraSituacion) && mejorAspecto (obtenerIncertidumbre unaSituacion) (obtenerIncertidumbre otraSituacion) && mejorAspecto (obtenerTension unaSituacion) (obtenerTension otraSituacion)
+mejorSituacion []                 otraSituacion = True
+mejorSituacion (aspecto:aspectos) otraSituacion = mejorAspecto aspecto . buscarAspectoDeTipo (tipoDeAspecto aspecto) $ otraSituacion && mejorSituacion aspectos otraSituacion
+--mejorSituacion unaSituacion otraSituacion = mejorAspecto (obtenerPeligro unaSituacion) (obtenerPeligro otraSituacion) && mejorAspecto (obtenerIncertidumbre unaSituacion) (obtenerIncertidumbre otraSituacion) && mejorAspecto (obtenerTension unaSituacion) (obtenerTension otraSituacion)
 
 -- c.
 modificarSituacion :: (Float -> Float) -> Aspecto -> Situacion -> Situacion
@@ -42,17 +45,25 @@ modificarSituacion alteracion unAspecto unaSituacion = reemplazarAspecto (modifi
 
 -- Auxiliar
 
-cambiarGrado :: Float -> Aspecto -> Aspecto
-cambiarGrado unGrado unAspecto = unAspecto { grado = unGrado }
+asignarGrado :: Float -> Aspecto -> Aspecto
+asignarGrado unGrado unAspecto = unAspecto { grado = unGrado }
+--cambiarGrado :: Float -> Aspecto -> Aspecto
+--cambiarGrado unGrado unAspecto = unAspecto { grado = unGrado }
 
-obtenerPeligro :: Situacion -> Aspecto
-obtenerPeligro = buscarAspectoDeTipo "Peligro"
+peligro :: Situacion -> Aspecto
+peligro = buscarAspectoDeTipo "Peligro"
+--obtenerPeligro :: Situacion -> Aspecto
+--obtenerPeligro = buscarAspectoDeTipo "Peligro"
 
-obtenerIncertidumbre :: Situacion -> Aspecto
-obtenerIncertidumbre = buscarAspectoDeTipo "Incertidumbre"
+incertidumbre :: Situacion -> Aspecto
+incertidumbre = buscarAspectoDeTipo "Incertidumbre"
+--obtenerIncertidumbre :: Situacion -> Aspecto
+--obtenerIncertidumbre = buscarAspectoDeTipo "Incertidumbre"
 
-obtenerTension :: Situacion -> Aspecto
-obtenerTension = buscarAspectoDeTipo "Tension"
+tension :: Situacion -> Aspecto
+tension = buscarAspectoDeTipo "Tension"
+--obtenerTension :: Situacion -> Aspecto
+--obtenerTension = buscarAspectoDeTipo "Tension"
 
 ------------------ PUNTO 2 ------------------
 
@@ -69,13 +80,16 @@ data Gema = UnaGema{
 type Personalidad = Situacion -> Situacion
 
 vidente :: Personalidad
-vidente = alterarTension (subtract 10) . alterarIncertidumbre (/2)
+vidente = bajarTension 10 . alterarIncertidumbre (/2)
+-- vidente = alterarTension (subtract 10) . alterarIncertidumbre (/2)
 
 relajada :: Float -> Personalidad
-relajada relajacion = alterarPeligro (+ relajacion) . alterarTension (subtract 30)
+relajada relajacion = alterarPeligro (+ relajacion) . bajarTension 30
+-- relajada relajacion = alterarPeligro (+ relajacion) . alterarTension (subtract 30) 
 
 segura :: Personalidad
-segura = alterarTension (subtract 40) . alterarIncertidumbre (/ 4) . alterarPeligro (subtract 100)
+segura = bajarTension 40 . alterarIncertidumbre (/ 4) . bajarPeligro 100
+-- segura = alterarTension (subtract 40) . alterarIncertidumbre (/ 4) . alterarPeligro (subtract 100) 
 
 -- c.
 
@@ -87,23 +101,30 @@ perla = UnaGema "Perla" 850 segura
 
 -- Auxiliar
 alterarTension :: (Float -> Float) -> Situacion -> Situacion
-alterarTension alteracion unaSituacion = modificarSituacion alteracion (obtenerTension unaSituacion) unaSituacion
+alterarTension alteracion unaSituacion = modificarSituacion alteracion (tension unaSituacion) unaSituacion
 
 alterarIncertidumbre :: (Float -> Float) -> Situacion -> Situacion
-alterarIncertidumbre alteracion unaSituacion = modificarSituacion alteracion (obtenerIncertidumbre unaSituacion) unaSituacion
+alterarIncertidumbre alteracion unaSituacion = modificarSituacion alteracion (incertidumbre unaSituacion) unaSituacion
 
 alterarPeligro :: (Float -> Float) -> Situacion -> Situacion
-alterarPeligro alteracion unaSituacion = modificarSituacion alteracion (obtenerPeligro unaSituacion) unaSituacion
+alterarPeligro alteracion unaSituacion = modificarSituacion alteracion (peligro unaSituacion) unaSituacion
+
+bajarTension unaCantidad = alterarTension (subtract unaCantidad)
+
+bajarPeligro unaCantidad = alterarPeligro (subtract unaCantidad)
 
 ------------------ PUNTO 3 ------------------
 
 gemaDominante :: Gema -> Gema -> Situacion -> Gema
 gemaDominante unaGema otraGema unaSituacion
-    | ganaEnFuerza unaGema otraGema && ganaEnPersonalidad unaGema otraGema unaSituacion = unaGema
-    | ganaEnFuerza otraGema unaGema && ganaEnPersonalidad otraGema unaGema unaSituacion = otraGema
-    | otherwise                                                                         = (UnaGema "" 0 vidente)
+    | dominaA unaGema otraGema unaSituacion = unaGema
+    | dominaA otraGema unaGema unaSituacion = otraGema
+    | otherwise                             = (UnaGema "" 0 vidente)
 
 -- Auxiliar
+
+dominaA :: Gema -> Gema -> Situacion -> Bool
+dominaA unaGema otraGema unaSituacion = ganaEnFuerza unaGema otraGema && ganaEnPersonalidad unaGema otraGema unaSituacion
 
 ganaEnFuerza :: Gema -> Gema -> Bool
 ganaEnFuerza (UnaGema _ fuerza1 _) (UnaGema _ fuerza2 _) = fuerza1 >= fuerza2
@@ -124,7 +145,7 @@ nombreFusion unaGema otraGema
     | otherwise                         = nombre unaGema ++ nombre otraGema
 
 personalidadFusion :: Gema -> Gema -> Personalidad
-personalidadFusion unaGema otraGema = (personalidad unaGema) . (personalidad otraGema) . alterarIncertidumbre (subtract 10) . alterarPeligro (subtract 10) . alterarTension (subtract 10)
+personalidadFusion unaGema otraGema = (personalidad unaGema) . (personalidad otraGema) . alterarIncertidumbre (subtract 10) . bajarPeligro 10 . bajarTension 10
 
 fuerzaFusion :: Gema -> Gema -> Situacion -> Int
 fuerzaFusion unaGema otraGema unaSituacion
@@ -137,8 +158,9 @@ fusionCompatible unaGema otraGema unaSituacion = ganaEnPersonalidad (UnaGema "" 
 ------------------ PUNTO 5 ------------------
 
 fusionGrupal :: Situacion -> [Gema] -> Gema
-fusionGrupal _ [x] = x
-fusionGrupal unaSituacion (unaGema:otraGema:gemas) = fusionGrupal unaSituacion . (: gemas) $ fusionGemas unaGema otraGema unaSituacion
+fusionGrupal unaSituacion = foldl1 (\unaGema otraGema -> fusionGemas unaGema otraGema unaSituacion)
+--fusionGrupal _ [x] = x
+--fusionGrupal unaSituacion (unaGema:otraGema:gemas) = fusionGrupal unaSituacion . (: gemas) $ fusionGemas unaGema otraGema unaSituacion
 
 ------------------ PUNTO 6 ------------------
 
