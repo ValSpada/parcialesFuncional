@@ -3,8 +3,8 @@ import Data.List(genericLength)
 
 data Elemento = UnElemento{
     tipo    :: String,
-    ataque  :: (Personaje -> Personaje),
-    defensa :: (Personaje -> Personaje)
+    ataque  :: Transformacion,
+    defensa :: Transformacion
 } deriving (Show)
 
 data Personaje = UnPersonaje{
@@ -18,20 +18,23 @@ data Personaje = UnPersonaje{
 
 --------------------- PUNTO 1 ---------------------
 
+type Transformacion = Personaje -> Personaje
+
 -- a.
-mandarAlAnio :: Int -> Personaje -> Personaje
+mandarAlAnio :: Int -> Transformacion
 mandarAlAnio unAnio unPersonaje = unPersonaje { anioPresente = unAnio }
 
 -- b.
-meditar :: Personaje -> Personaje
+meditar :: Transformacion
 meditar = alterarSalud (1.5 *)
 
 -- c.
-causarDanio :: Float -> Personaje -> Personaje
-causarDanio danio unPersonaje
-    | (> 0).salud.recibirDanio $ unPersonaje =  recibirDanio unPersonaje
-    | otherwise                              = alterarSalud (* 0) unPersonaje
-    where recibirDanio = alterarSalud (subtract danio)
+causarDanio :: Float -> Transformacion
+causarDanio danio = alterarSalud (max 0 . subtract danio)
+--causarDanio danio unPersonaje
+--    | (> 0).salud.recibirDanio $ unPersonaje =  recibirDanio unPersonaje
+--    | otherwise                              = alterarSalud (* 0) unPersonaje
+--    where recibirDanio = alterarSalud (subtract danio)
 
 -- Auxiliar
 alterarSalud :: (Float -> Float) -> Personaje -> Personaje
@@ -41,7 +44,7 @@ alterarSalud alteracion unPersonaje = unPersonaje { salud = alteracion . salud $
 
 -- a.
 esMalvado :: Personaje -> Bool
-esMalvado (UnPersonaje _ unosElementos _) = any (== "Maldad") . map tipo $ unosElementos
+esMalvado (UnPersonaje _ unosElementos _) = any ((== "Maldad") . tipo) $ unosElementos
 
 -- b.
 danioQueProduce :: Personaje -> Elemento -> Float
@@ -49,47 +52,51 @@ danioQueProduce unPersonaje (UnElemento _ atacar _) = (salud unPersonaje) - ((sa
 
 -- c.
 enemigosMortales :: Personaje -> [Personaje] -> [Personaje]
-enemigosMortales unPersonaje unosEnemigos = filter (verificarMortalidad unPersonaje) unosEnemigos
+enemigosMortales unPersonaje unosEnemigos = filter (puedeMatarloConUnSoloElemento unPersonaje) unosEnemigos
 
 -- Auxiliar
-verificarMortalidad :: Personaje -> Personaje -> Bool
-verificarMortalidad unPersonaje unEnemigo = (== 0) . salud . aplicarAtaques unEnemigo $ unPersonaje
+puedeMatarloConUnSoloElemento :: Personaje -> Personaje -> Bool
+puedeMatarloConUnSoloElemento unPersonaje unEnemigo = estaMuerto . aplicarAtaques unEnemigo $ unPersonaje
+
+estaMuerto :: Personaje -> Bool
+estaMuerto (UnPersonaje vida _ _) = vida == 0
 
 --------------------- PUNTO 3 ---------------------
 
 -- a.
-concentracion :: Float -> Elemento
+concentracion :: Int -> Elemento
 concentracion nivelConcentracion = UnElemento {
     tipo = "Magia",
-    ataque = noAfecta,
+    ataque = id,
     defensa = concentrarse nivelConcentracion
 }
 
 -- b.
 esbirrosMalvados :: Int -> [Elemento]
-esbirrosMalvados 0                = []
-esbirrosMalvados cantidadEsbirros = esbirro:(esbirrosMalvados (cantidadEsbirros - 1))
+esbirrosMalvados unaCantidad = replicate unaCantidad esbirro
+--esbirrosMalvados 0                = []
+--esbirrosMalvados cantidadEsbirros = esbirro:(esbirrosMalvados (cantidadEsbirros - 1))
 
 -- c.
 jack = UnPersonaje 300 [concentracion 3, katanaMagica] 200
 
 -- d.
 aku :: Int -> Float -> Personaje
-aku anioActual cantidadSalud = UnPersonaje cantidadSalud (portalAlFuturo anioActual:esbirrosMalvados (100*anioActual)) anioActual
+aku anioActual cantidadSalud = UnPersonaje cantidadSalud (concentracion 4:portalAlFuturo anioActual:esbirrosMalvados (100*anioActual)) anioActual
 
 -- Auxiliar
 esbirro :: Elemento
 esbirro = UnElemento{
     tipo = "Maldad",
     ataque = causarDanio 1,
-    defensa = noAfecta
+    defensa = id
 }
 
 katanaMagica :: Elemento
 katanaMagica = UnElemento{
     tipo = "Magia",
     ataque = causarDanio 1000,
-    defensa = noAfecta
+    defensa = id
 }
 
 portalAlFuturo :: Int -> Elemento
@@ -101,12 +108,10 @@ portalAlFuturo unAnio = UnElemento{
 
 -- Auxiliar
 
-concentrarse :: Float -> Personaje -> Personaje
-concentrarse 1                  = meditar
-concentrarse nivelConcentracion = concentrarse (nivelConcentracion - 1) . meditar
-
-noAfecta :: Personaje -> Personaje
-noAfecta unPersonaje = unPersonaje
+concentrarse :: Int -> Personaje -> Personaje
+concentrarse nivelConcentracion = (!! (nivelConcentracion-1)) . iterate (meditar .) $ meditar
+--concentrarse 1                  = meditar
+--concentrarse nivelConcentracion = concentrarse (nivelConcentracion - 1) . meditar
 
 --------------------- PUNTO 4 ---------------------
 
@@ -117,16 +122,21 @@ aku1 = aku 0 200
 
 luchar :: Personaje -> Personaje -> (Personaje,Personaje)
 luchar atacante defensor
-    | (== 0) . salud . aplicarAtaques atacante $ defensor = (defensor,atacante)
-    | otherwise                                           = luchar (aplicarAtaques atacante defensor) (aplicarDefensivos atacante)
+    | estaMuerto . aplicarAtaques atacante $ defensor = (atacante,defensor)
+    | otherwise                                       = luchar (aplicarAtaques atacante defensor) (aplicarDefensivos atacante)
 
 -- Auxiliar
 
 aplicarAtaques :: Personaje -> Personaje -> Personaje
-aplicarAtaques atacante defensor = foldr (($) . ataque) defensor (elementos atacante)
+aplicarAtaques atacante defensor = aplicarElementos defensor ataque (elementos atacante)
+--aplicarAtaques atacante defensor = foldr (($) . ataque) defensor (elementos atacante)
 
 aplicarDefensivos :: Personaje -> Personaje
-aplicarDefensivos atacante = foldr (($) . defensa) atacante (elementos atacante)
+aplicarDefensivos atacante = aplicarElementos atacante defensa (elementos atacante)
+--aplicarDefensivos atacante = foldr (($) . defensa) atacante (elementos atacante)
+
+aplicarElementos :: Personaje -> (Elemento -> Transformacion) -> [Elemento] -> Personaje
+aplicarElementos unPersonaje particularidadElemento unosElementos = foldr (($) . particularidadElemento) unPersonaje unosElementos
 
 --------------------- PUNTO 5 ---------------------
 f :: (Eq a, Num b) => ([a] -> b -> (c,c)) -> (b -> [a]) -> [a] -> [b] -> [c]
