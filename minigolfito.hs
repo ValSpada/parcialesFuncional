@@ -41,7 +41,7 @@ type Palo = Habilidad -> Tiro
 
 -- a.i.   --
 putter :: Palo
-putter unaHabilidad = Tiro 10 precisionRecibida 0
+putter unaHabilidad = Tiro 10 precisionResultante 0
     where precisionResultante = (* 2) . precisionJugador $ unaHabilidad
 
 -- a.ii.  --
@@ -118,8 +118,8 @@ pasarPorLaguna largo unTiro = Tiro (velocidad unTiro) (precision unTiro) (div (a
 --    | otherwise           = Tiro 0 0 0
 
 -- c. --
-laguna :: Int -> Obstaculo
-laguna largo = Obstaculo{
+hoyo :: Obstaculo
+hoyo = Obstaculo{
     criterioSuperacion = superaHoyo,
     efectoSobreTiro    = pasarPorHoyo
 }
@@ -140,19 +140,28 @@ pasarPorHoyo _ = Tiro 0 0 0
 -- a. --
 
 palosUtiles :: Jugador -> Obstaculo -> [Palo]
-palosUtiles unJugador unObstaculo = filter (flip superaObstaculo unObstaculo . flip golpe unJugador) palos
+palosUtiles unJugador unObstaculo = filter (criterioSuperacion unObstaculo . flip golpe unJugador) palos
+
+--palosUtiles :: Jugador -> Obstaculo -> [Palo]
+--palosUtiles unJugador unObstaculo = filter (flip superaObstaculo unObstaculo . flip golpe unJugador) palos
 
 -- b. --
 
 cantidadObstaculosSuperados :: [Obstaculo] -> Tiro -> Int
-cantidadObstaculosSuperados unosObstaculos unTiro = genericLength . takeWhile (superaObstaculo unTiro) $ unosObstaculos
+cantidadObstaculosSuperados unosObstaculos unTiro = genericLength . takeWhile (flip criterioSuperacion unTiro) $ unosObstaculos
 
-superaObstaculo :: Tiro -> Obstaculo -> Bool
-superaObstaculo unTiro unObstaculo = unObstaculo unTiro /= (Tiro 0 0 0)
+--cantidadObstaculosSuperados :: [Obstaculo] -> Tiro -> Int
+--cantidadObstaculosSuperados unosObstaculos unTiro = genericLength . takeWhile (superaObstaculo unTiro) $ unosObstaculos
+
+--superaObstaculo :: Tiro -> Obstaculo -> Bool
+--superaObstaculo unTiro unObstaculo = unObstaculo unTiro /= (Tiro 0 0 0)
 
 -- c. --
-paloMasUtil :: Jugador -> [Obstaculo] -> Tiro
-paloMasUtil unJugador unosObstaculos = maximoSegun (paloQueSupera unosObstaculos) . map (flip golpe unJugador) $ palos
+paloMasUtil :: Jugador -> [Obstaculo] -> Palo
+paloMasUtil unJugador unosObstaculos = maximoSegun (cantidadObstaculosSuperados unosObstaculos . flip golpe unJugador) $ palos
+
+--paloMasUtil :: Jugador -> [Obstaculo] -> Tiro
+--paloMasUtil unJugador unosObstaculos = maximoSegun (paloQueSupera unosObstaculos) . map (flip golpe unJugador) $ palos
 
 ------------------ PUNTO 5 ------------------
 
